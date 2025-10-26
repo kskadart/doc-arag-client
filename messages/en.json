@@ -1,0 +1,116 @@
+{
+  "common": {
+    "home": "Home",
+    "chat": "Chat",
+    "documents": "Documents",
+    "settings": "Settings",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleting": "Deleting...",
+    "upload": "Upload",
+    "uploading": "Uploading...",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "metadata": "Metadata"
+  },
+  "home": {
+    "title": "DOCARAG",
+    "subtitle": "One workspace for documents",
+    "description": "We shorten staff onboarding. We provide fast, comprehensive, context-aware answers with up-to-date source references—decisions are made \"faster and better\".",
+    "features": {
+      "upload": {
+        "title": "Document Upload",
+        "description": "Upload and organize your documents for intelligent processing and quick access"
+      },
+      "search": {
+        "title": "Smart Search",
+        "description": "Find relevant information instantly with intelligent search capabilities"
+      },
+      "chat": {
+        "title": "Natural Conversations",
+        "description": "Get comprehensive answers from your documents through natural dialogue"
+      }
+    },
+    "cta": {
+      "startChat": "Start Chat",
+      "manageDocuments": "Manage Documents"
+    },
+    "footer": {
+      "poweredBy": "© 2025 DOCARAG"
+    }
+  },
+  "chat": {
+    "title": "Document Assistant Chat",
+    "welcome": {
+      "title": "Welcome to Document Assistant",
+      "description": "Please, ask your question",
+      "uploadButton": "Upload Documents"
+    },
+    "input": {
+      "placeholder": "Start a conversation...",
+      "followUp": "Ask a follow-up question..."
+    },
+    "sidebar": {
+      "newChat": "New Chat",
+      "history": "Chat History"
+    },
+    "message": {
+      "confidence": "Confidence",
+      "sources": "Sources",
+      "rephrasedQuery": "Rephrased Query"
+    },
+    "thinking": "Searching documents and generating answer...",
+    "error": "An error occurred: {error}. Please try again or check if documents are uploaded.",
+    "serviceUnavailable": "An error occurred: Service is unavailable. Please try again or check if documents are uploaded.",
+    "goToDocuments": "Manage Documents"
+  },
+  "documents": {
+    "title": "Document Management",
+    "uploadButton": "Upload Document",
+    "goToChat": "Go to Chat",
+    "empty": {
+      "title": "No documents yet",
+      "description": "Upload your first document to get started.",
+      "button": "Upload Now"
+    },
+    "error": {
+      "title": "Failed to Load Documents",
+      "retry": "Retry",
+      "serviceUnavailable": "Service is unavailable. Please check your connection."
+    },
+    "card": {
+      "delete": "Delete document",
+      "metadata": "Metadata"
+    },
+    "delete": {
+      "title": "Delete Document",
+      "message": "Are you sure you want to delete <strong>{filename}</strong>?",
+      "warning": "This action cannot be undone. All embeddings and metadata associated with this document will be permanently removed."
+    },
+    "upload": {
+      "title": "Upload Document",
+      "dropZone": "Drop your document here",
+      "orClick": "or click to browse",
+      "chooseFile": "Choose File",
+      "formats": "Supported formats: PDF, DOCX (max {size})",
+      "uploadButton": "Upload and Process",
+      "errors": {
+        "unsupportedType": "Only PDF and DOCX files are supported",
+        "tooLarge": "File size must be less than {size}",
+        "uploadFailed": "Failed to upload document"
+      }
+    },
+    "progress": {
+      "processing": "Processing document...",
+      "complete": "Processing complete!",
+      "error": "Processing failed",
+      "chunks": "Processed {current} of {total} chunks"
+    }
+  },
+  "language": {
+    "en": "English",
+    "ru": "Русский",
+    "switchTo": "Switch to {language}"
+  }
+}

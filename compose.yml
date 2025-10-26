@@ -1,0 +1,39 @@
+services:
+  client:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: doc-arag-client
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=/api
+    restart: unless-stopped
+    networks:
+      - arag-common-network
+    depends_on:
+      - caddy
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: doc-arag-caddy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+    networks:
+      - arag-common-network
+
+# Use the external network created by the backend
+networks:
+  arag-common-network:
+    external: true
+    name: arag-common-network
+
+volumes:
+  caddy_data:
+  caddy_config:
+

@@ -1,0 +1,33 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.*
+
+# Build outputs
+.next
+out
+dist
+build
+
+# Config files
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Types
+next-env.d.ts
+*.tsbuildinfo
+
+# IDE
+.vscode
+.idea
+
+# Misc
+.DS_Store
+*.log
+coverage
+
+# Git
+.git
+.husky
+
