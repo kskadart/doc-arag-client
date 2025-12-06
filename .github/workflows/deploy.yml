@@ -94,6 +94,7 @@ jobs:
             
             # Export environment variables
             export IMAGE_TAG=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            export DOMAIN=${{ vars.DOMAIN || 'localhost' }}
             export BACKEND_API_HOST=${{ vars.BACKEND_API_HOST || 'api' }}
             export BACKEND_API_PORT=${{ vars.BACKEND_API_PORT || '8103' }}
             

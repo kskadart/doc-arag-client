@@ -1,4 +1,8 @@
-localhost {
+http://{env.DOMAIN} {
+    redir https://{env.DOMAIN}{uri} permanent
+}
+
+{env.DOMAIN} {
     # Client - serve Next.js app
     reverse_proxy client:3000
     
@@ -7,12 +11,4 @@ localhost {
     handle_path /api/* {
         reverse_proxy {env.BACKEND_API_HOST}:{env.BACKEND_API_PORT}
     }
-    
-    # Use self-signed certificate
-    tls internal
 }
-
-http://localhost {
-    redir https://localhost{uri} permanent
-}
-
