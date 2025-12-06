@@ -1,0 +1,17 @@
+localhost {
+    # Client - serve Next.js app
+    reverse_proxy client:3000
+    
+    # Backend API - proxy to FastAPI
+    handle_path /api/* {
+        reverse_proxy api:8103
+    }
+    
+    # Use self-signed certificate
+    tls internal
+}
+
+http://localhost {
+    redir https://localhost{uri} permanent
+}
+

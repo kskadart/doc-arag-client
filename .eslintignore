@@ -1,0 +1,28 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.*
+
+# Build outputs
+.next
+out
+dist
+build
+
+# Config files
+next.config.ts
+postcss.config.mjs
+tailwind.config.ts
+
+# Types
+next-env.d.ts
+*.tsbuildinfo
+
+# IDE
+.vscode
+.idea
+
+# Misc
+.DS_Store
+*.log
+
