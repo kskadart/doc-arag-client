@@ -23,6 +23,9 @@ services:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
+    environment:
+      - BACKEND_API_HOST=${BACKEND_API_HOST:-api}
+      - BACKEND_API_PORT=${BACKEND_API_PORT:-8103}
     restart: unless-stopped
     networks:
       - arag-common-network

@@ -14,8 +14,12 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Build arguments for Next.js public env vars
+ARG NEXT_PUBLIC_API_URL=/api
+
 # Build the Next.js application (TypeScript compilation happens here)
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 RUN npm run build
 
 # Runtime stage - minimal production image

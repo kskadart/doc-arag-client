@@ -3,8 +3,9 @@ localhost {
     reverse_proxy client:3000
     
     # Backend API - proxy to FastAPI
+    # Note: This path must match NEXT_PUBLIC_API_URL build arg (default: /api)
     handle_path /api/* {
-        reverse_proxy api:8103
+        reverse_proxy {env.BACKEND_API_HOST}:{env.BACKEND_API_PORT}
     }
     
     # Use self-signed certificate

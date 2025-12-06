@@ -3,11 +3,8 @@ services:
     image: ${IMAGE_TAG:-ghcr.io/kskada/doc-arag-client:latest}
     container_name: doc-arag-client
     restart: unless-stopped
-    env_file:
-      - ../.env
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-/api}
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
       interval: 30s
@@ -29,6 +26,9 @@ services:
       - ../caddy/Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
+    environment:
+      - BACKEND_API_HOST=${BACKEND_API_HOST:-api}
+      - BACKEND_API_PORT=${BACKEND_API_PORT:-8103}
     restart: unless-stopped
     networks:
       - arag-common-network
