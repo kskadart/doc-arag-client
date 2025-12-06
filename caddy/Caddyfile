@@ -1,14 +1,14 @@
-http://{env.DOMAIN} {
-    redir https://{env.DOMAIN}{uri} permanent
+http://{$DOMAIN} {
+    redir https://{$DOMAIN}{uri} permanent
 }
 
-{env.DOMAIN} {
+{$DOMAIN} {
     # Client - serve Next.js app
     reverse_proxy client:3000
     
     # Backend API - proxy to FastAPI
     # Note: This path must match NEXT_PUBLIC_API_URL build arg (default: /api)
     handle_path /api/* {
-        reverse_proxy {env.BACKEND_API_HOST}:{env.BACKEND_API_PORT}
+        reverse_proxy {$BACKEND_API_HOST}:{$BACKEND_API_PORT}
     }
 }
