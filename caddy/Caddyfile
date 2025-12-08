@@ -3,12 +3,14 @@ http://{$DOMAIN} {
 }
 
 {$DOMAIN} {
-    # Client - serve Next.js app
-    reverse_proxy client:3000
-    
-    # Backend API - proxy to FastAPI
+    # Backend API - proxy to FastAPI (preserve /api prefix)
     # Note: This path must match NEXT_PUBLIC_API_URL build arg (default: /api)
-    handle_path /api/* {
+    handle /api/* {
         reverse_proxy {$BACKEND_API_HOST}:{$BACKEND_API_PORT}
+    }
+
+    # Client - serve Next.js app
+    handle {
+        reverse_proxy client:3000
     }
 }
