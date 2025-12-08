@@ -3,9 +3,8 @@ http://{$DOMAIN} {
 }
 
 {$DOMAIN} {
-    # Backend API - proxy to FastAPI (preserve /api prefix)
-    # Note: This path must match NEXT_PUBLIC_API_URL build arg (default: /api)
-    handle /api/* {
+    # Backend API - proxy to FastAPI (strip /api prefix)
+    handle_path {$API_PATH}/* {
         reverse_proxy {$BACKEND_API_HOST}:{$BACKEND_API_PORT}
     }
 
