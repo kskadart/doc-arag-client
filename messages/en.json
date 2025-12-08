@@ -90,6 +90,7 @@
     },
     "upload": {
       "title": "Upload Document",
+      "fileName": "File name",
       "dropZone": "Drop your document here",
       "orClick": "or click to browse",
       "chooseFile": "Choose File",

@@ -98,12 +98,12 @@ export function DocumentCard({ document, onDelete }: DocumentCardProps) {
         title={t('delete.title')}
       >
         <div className="space-y-4">
-          <p
-            className="text-[var(--md-sys-color-on-surface)]"
-            dangerouslySetInnerHTML={{
-              __html: t('delete.message', { filename: document.filename }),
-            }}
-          />
+          <p className="text-[var(--md-sys-color-on-surface)]">
+            {t.rich('delete.message', {
+              filename: document.filename,
+              strong: (chunks) => <strong>{chunks}</strong>,
+            })}
+          </p>
           <p className="text-sm text-[var(--md-sys-color-on-surface-variant)]">
             {t('delete.warning')}
           </p>

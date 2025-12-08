@@ -47,14 +47,14 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
       <div
         className={cn(
           'relative bg-[var(--md-sys-color-surface)] rounded-3xl shadow-[var(--md-sys-elevation-3)]',
-          'max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto',
+          'max-w-lg w-full mx-4 max-h-[90vh] flex flex-col',
           'animate-in fade-in zoom-in-95',
           className
         )}
       >
         {/* Header */}
         {title && (
-          <div className="flex items-center justify-between p-6 border-b border-[var(--md-sys-color-outline)]">
+          <div className="flex items-center justify-between p-6 border-b border-[var(--md-sys-color-outline)] flex-shrink-0">
             <h2 className="text-xl font-semibold text-[var(--md-sys-color-on-surface)]">{title}</h2>
             <button
               onClick={onClose}
@@ -66,7 +66,7 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
         )}
 
         {/* Content */}
-        <div className="p-6">{children}</div>
+        <div className="p-6 overflow-y-auto">{children}</div>
       </div>
     </div>
   );

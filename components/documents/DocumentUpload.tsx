@@ -30,6 +30,7 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [taskId, setTaskId] = useState<string | null>(null);
+  const [documentName, setDocumentName] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const validateFile = (file: File): string | null => {
@@ -49,6 +50,7 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
       return;
     }
     setFile(selectedFile);
+    setDocumentName(selectedFile.name);
     setError(null);
   };
 
@@ -73,13 +75,14 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
 
   const handleUpload = async () => {
     if (!file) return;
+    const name = documentName.trim() || file.name;
 
     setUploading(true);
     setError(null);
 
     try {
       // Upload file
-      const uploadResponse = await apiClient.uploadDocument(file);
+      const uploadResponse = await apiClient.uploadDocument(file, name);
 
       // Trigger embedding generation
       const embeddingResponse = await apiClient.generateEmbeddings(uploadResponse.file_id);
@@ -93,6 +96,7 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
   const handleTaskComplete = () => {
     setUploading(false);
     setFile(null);
+    setDocumentName('');
     setTaskId(null);
     onUploadComplete();
   };
@@ -105,6 +109,20 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
 
   return (
     <div className="w-full max-w-2xl mx-auto">
+      {/* File name input - shown at top when file is selected */}
+      {file && !taskId && (
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">{t('fileName')}</label>
+          <input
+            type="text"
+            value={documentName}
+            onChange={(e) => setDocumentName(e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white"
+            placeholder={file.name}
+          />
+        </div>
+      )}
+
       {/* Upload area */}
       {!taskId && (
         <div

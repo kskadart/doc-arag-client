@@ -80,9 +80,10 @@ class ApiClient {
   }
 
   // Upload document
-  async uploadDocument(file: File): Promise<UploadResponse> {
+  async uploadDocument(file: File, documentName?: string): Promise<UploadResponse> {
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('document', file, file.name);
+    formData.append('document_name', documentName || file.name);
 
     const response = await fetch(`${API_BASE}/uploads`, {
       method: 'POST',
