@@ -13,3 +13,11 @@ http://{$DOMAIN} {
         reverse_proxy client:3000
     }
 }
+
+http://{$STREAMLIT_DOMAIN} {
+    redir https://{$STREAMLIT_DOMAIN}{uri} permanent
+}
+
+{$STREAMLIT_DOMAIN} {
+    reverse_proxy {$STREAMLIT_HOST}:{$STREAMLIT_PORT}
+}

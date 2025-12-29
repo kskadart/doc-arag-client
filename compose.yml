@@ -28,6 +28,9 @@ services:
       - BACKEND_API_HOST=${BACKEND_API_HOST:-api}
       - BACKEND_API_PORT=${BACKEND_API_PORT:-8103}
       - API_PATH=${API_PATH:-/api}
+      - STREAMLIT_DOMAIN=${STREAMLIT_DOMAIN:-steriliry.ai.kskada.com}
+      - STREAMLIT_HOST=${STREAMLIT_HOST:-streamlit}
+      - STREAMLIT_PORT=${STREAMLIT_PORT:-8501}
     restart: unless-stopped
     networks:
       - arag-common-network
