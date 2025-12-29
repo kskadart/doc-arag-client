@@ -1,13 +1,14 @@
 {
+    auto_https on
 }
 
-http://{$DOMAIN} {
-    redir https://{$DOMAIN}{uri} permanent
+http://{$DOMAIN:localhost} {
+    redir https://{$DOMAIN:localhost}{uri} permanent
 }
 
-{$DOMAIN} {
-    handle_path {$API_PATH}/* {
-        reverse_proxy {$BACKEND_API_HOST}:{$BACKEND_API_PORT}
+{$DOMAIN:localhost} {
+    handle_path {$API_PATH:/api}/* {
+        reverse_proxy {$BACKEND_API_HOST:api}:{$BACKEND_API_PORT:8103}
     }
 
     handle {
@@ -15,10 +16,10 @@ http://{$DOMAIN} {
     }
 }
 
-http://{$STREAMLIT_DOMAIN} {
-    redir https://{$STREAMLIT_DOMAIN}{uri} permanent
+http://{$STREAMLIT_DOMAIN:streamlit.localhost} {
+    redir https://{$STREAMLIT_DOMAIN:streamlit.localhost}{uri} permanent
 }
 
-{$STREAMLIT_DOMAIN} {
-    reverse_proxy {$STREAMLIT_HOST}:{$STREAMLIT_PORT}
+{$STREAMLIT_DOMAIN:streamlit.localhost} {
+    reverse_proxy {$STREAMLIT_HOST:streamlit}:{$STREAMLIT_PORT:8501}
 }
