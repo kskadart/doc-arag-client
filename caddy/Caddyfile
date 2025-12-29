@@ -1,14 +1,15 @@
+{
+}
+
 http://{$DOMAIN} {
     redir https://{$DOMAIN}{uri} permanent
 }
 
 {$DOMAIN} {
-    # Backend API - proxy to FastAPI (strip /api prefix)
     handle_path {$API_PATH}/* {
         reverse_proxy {$BACKEND_API_HOST}:{$BACKEND_API_PORT}
     }
 
-    # Client - serve Next.js app
     handle {
         reverse_proxy client:3000
     }
