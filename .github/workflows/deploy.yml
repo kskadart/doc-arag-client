@@ -91,12 +91,16 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /opt/doc-arag-client
-            
+            git
             # Export environment variables
             export IMAGE_TAG=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
             export DOMAIN=${{ vars.DOMAIN || 'localhost' }}
             export BACKEND_API_HOST=${{ vars.BACKEND_API_HOST || 'api' }}
             export BACKEND_API_PORT=${{ vars.BACKEND_API_PORT || '8103' }}
+            export API_PATH=${{ vars.API_PATH || '/api' }}
+            export STREAMLIT_DOMAIN=${{ vars.STREAMLIT_DOMAIN || 'steriliry.ai.kskada.com' }}
+            export STREAMLIT_HOST=${{ vars.STREAMLIT_HOST || 'streamlit' }}
+            export STREAMLIT_PORT=${{ vars.STREAMLIT_PORT || '8501' }}
             
             # Login to GitHub Container Registry
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
