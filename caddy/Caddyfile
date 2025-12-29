@@ -1,5 +1,4 @@
 {
-    auto_https on
 }
 
 http://{$DOMAIN:localhost} {
