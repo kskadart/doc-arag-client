@@ -99,7 +99,7 @@ jobs:
             export BACKEND_API_HOST=${{ vars.BACKEND_API_HOST || 'api' }}
             export BACKEND_API_PORT=${{ vars.BACKEND_API_PORT || '8103' }}
             export API_PATH=${{ vars.API_PATH || '/api' }}
-            export STREAMLIT_DOMAIN=${{ vars.STREAMLIT_DOMAIN || 'steriliry.ai.kskada.com' }}
+            export STREAMLIT_DOMAIN=${{ vars.STREAMLIT_DOMAIN || 'sterility.ai.kskada.com' }}
             export STREAMLIT_HOST=${{ vars.STREAMLIT_HOST || 'streamlit' }}
             export STREAMLIT_PORT=${{ vars.STREAMLIT_PORT || '8501' }}
             
