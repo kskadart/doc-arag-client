@@ -113,9 +113,9 @@ jobs:
             docker compose -f compose.yml pull
             docker compose -f compose.yml up -d --remove-orphans --no-build
 
-            # Reload Caddy config (no container restart). Fail deploy early if config is invalid.
-            docker compose -f compose.yml exec -T caddy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
-            docker compose -f compose.yml exec -T caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
+            # Recreate Caddy to guarantee it picks up the newly copied Caddyfile
+            docker compose -f compose.yml pull caddy
+            docker compose -f compose.yml up -d --no-deps --force-recreate caddy
             
             # Cleanup old images
             docker image prune -f
