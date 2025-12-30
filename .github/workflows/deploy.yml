@@ -114,6 +114,9 @@ jobs:
             docker compose -f compose.yml up -d --remove-orphans --no-build
 
             # Recreate Caddy to guarantee it picks up the newly copied Caddyfile
+            docker compose -f compose.yml stop caddy || true
+            docker compose -f compose.yml rm -f caddy || true
+            docker rm -f doc-arag-caddy 2>/dev/null || true
             docker compose -f compose.yml pull caddy
             docker compose -f compose.yml up -d --no-deps --force-recreate caddy
             
