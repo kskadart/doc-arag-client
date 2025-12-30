@@ -72,6 +72,7 @@ jobs:
               sudo mkdir -p /opt/doc-arag-client
               sudo chown $USER:$USER /opt/doc-arag-client
             fi
+            mkdir -p /opt/doc-arag-client/caddy
 
       - name: Copy docker-compose to server
         uses: appleboy/scp-action@v0.1.7
@@ -79,7 +80,7 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "docker/compose.prod.yml,caddy/Caddyfile"
+          source: "compose.yml,caddy/Caddyfile"
           target: "/opt/doc-arag-client"
           strip_components: 0
 
@@ -91,7 +92,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /opt/doc-arag-client
-            git
+
             # Export environment variables
             export IMAGE_TAG=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
             export DOMAIN=${{ vars.DOMAIN || 'localhost' }}
@@ -109,8 +110,12 @@ jobs:
             docker network create arag-common-network 2>/dev/null || true
             
             # Deploy
-            docker compose -f docker/compose.prod.yml pull
-            docker compose -f docker/compose.prod.yml up -d --remove-orphans
+            docker compose -f compose.yml pull
+            docker compose -f compose.yml up -d --remove-orphans --no-build
+
+            # Reload Caddy config (no container restart). Fail deploy early if config is invalid.
+            docker compose -f compose.yml exec -T caddy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+            docker compose -f compose.yml exec -T caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
             
             # Cleanup old images
             docker image prune -f
