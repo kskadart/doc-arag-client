@@ -7,6 +7,7 @@ import {
   EmbeddingResponse,
   HealthResponse,
   QueryRequest,
+  SessionDeleteResponse,
   TaskStatusResponse,
   UploadedFilesListResponse,
   UploadResponse,
@@ -76,6 +77,13 @@ class ApiClient {
     return this.request<AgentQueryResponse>('/query', {
       method: 'POST',
       body: JSON.stringify(request),
+    });
+  }
+
+  // Forget a chat session on the backend (idempotent)
+  async deleteSession(sessionId: string): Promise<SessionDeleteResponse> {
+    return this.request<SessionDeleteResponse>(`/sessions/${encodeURIComponent(sessionId)}`, {
+      method: 'DELETE',
     });
   }
 
