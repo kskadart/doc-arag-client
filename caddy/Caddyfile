@@ -1,24 +1,36 @@
 {
+	# e.g. CADDY_GLOBAL_OPTIONS=local_certs for a self-signed local domain
+	{$CADDY_GLOBAL_OPTIONS}
 }
 
 http://{$DOMAIN} {
-    redir https://{$DOMAIN}{uri} permanent
+	redir https://{$DOMAIN}{uri} permanent
 }
 
 {$DOMAIN:localhost} {
-    handle_path {$API_PATH}/* {
-        reverse_proxy {$BACKEND_API_HOST}:{$BACKEND_API_PORT}
-    }
+	# route keeps the literal order: auth check first, then the proxies
+	route {
+		# AUTH_MODE=on  -> auth.on.caddy: every request is checked by Authelia
+		# AUTH_MODE=off -> auth.off.caddy: no authentication (local development)
+		import /etc/caddy/auth.{$AUTH_MODE:off}.caddy
 
-    handle {
-        reverse_proxy client:3000
-    }
+		handle_path {$API_PATH}/* {
+			reverse_proxy {$BACKEND_API_HOST}:{$BACKEND_API_PORT}
+		}
+
+		handle {
+			reverse_proxy client:3000
+		}
+	}
 }
 
+# Authelia login portal on auth.{DOMAIN}; empty file when AUTH_MODE=off
+import /etc/caddy/portal.{$AUTH_MODE:off}.caddy
+
 http://{$STREAMLIT_DOMAIN} {
-    redir https://{$STREAMLIT_DOMAIN}{uri} permanent
+	redir https://{$STREAMLIT_DOMAIN}{uri} permanent
 }
 
 {$STREAMLIT_DOMAIN} {
-    reverse_proxy {$STREAMLIT_HOST}:{$STREAMLIT_PORT}
+	reverse_proxy {$STREAMLIT_HOST}:{$STREAMLIT_PORT}
 }

@@ -146,6 +146,48 @@ git commit --no-verify -m "message"
 
 The frontend uses the `arag-common-network` Docker network created by the backend. Ensure the backend is running first to create this network.
 
+## Authentication (Authelia)
+
+Sign-in is handled at the edge, not in the app: Caddy asks
+[Authelia](https://www.authelia.com/) about every request (`forward_auth`), unauthenticated
+browser navigations are redirected to the login portal on `auth.<DOMAIN>`, and the backend
+receives the identity as `Remote-User` / `Remote-Groups` headers (its `AUTH_MODE=trusted-headers`).
+Members of the `admins` group may manage documents; everyone else may only chat. The rules live
+in `authelia/configuration.yml`; the client only reads `GET /api/me` to show the user, hide the
+Documents page from operators and reload on `401` so the portal redirect can happen.
+
+It is off by default (`AUTH_MODE=off`, no `authelia` container). To enable:
+
+1. Pick a real domain: Authelia refuses `localhost` as a cookie domain. Locally, add
+   `127.0.0.1 oreo.test auth.oreo.test` to `/etc/hosts` and set `CADDY_GLOBAL_OPTIONS=local_certs`
+   so Caddy issues self-signed certificates.
+2. Create the user database from the template and put real hashes in:
+
+   ```bash
+   cp authelia/users.example.yml authelia/users.yml   # git-ignored
+   docker run --rm authelia/authelia:4.39.27 authelia crypto hash generate argon2 --password 'change-me'
+   ```
+
+3. In `.env`:
+
+   ```bash
+   DOMAIN=oreo.test
+   AUTH_MODE=on
+   COMPOSE_PROFILES=auth
+   AUTHELIA_SESSION_SECRET=$(openssl rand -hex 32)
+   AUTHELIA_STORAGE_ENCRYPTION_KEY=$(openssl rand -hex 32)
+   AUTHELIA_JWT_SECRET=$(openssl rand -hex 32)
+   CADDY_GLOBAL_OPTIONS=local_certs   # local domain only
+   ```
+
+4. Start the backend with `AUTH_MODE=trusted-headers`, then `docker compose up -d` here.
+
+Password-reset and 2FA-enrolment mails are written to `/data/notification.txt` inside the
+`authelia_data` volume until an SMTP notifier is configured. In production the workflow
+`deploy.yml` takes the three secrets and the users file from GitHub
+secrets (`AUTHELIA_USERS_YML_B64` is the file base64-encoded on one line); the repository
+variable `AUTH_MODE=off` disables authentication.
+
 ## Project Structure
 
 ```
@@ -171,10 +213,14 @@ doc-arag-client/
 ├── docker/
 │   └── Dockerfile       # Multi-stage production build
 ├── caddy/
-│   └── Caddyfile        # Reverse proxy configuration
+│   ├── Caddyfile        # Reverse proxy configuration
+│   └── auth.*.caddy     # forward_auth snippet picked by AUTH_MODE
+├── authelia/
+│   ├── configuration.yml
+│   └── users.example.yml
 ├── i18n.ts              # Internationalization config
 ├── proxy.ts             # Next.js 16 proxy (formerly middleware)
-└── docker-compose.yml   # Docker services configuration
+└── compose.yml          # Docker services configuration
 ```
 
 ## API Endpoints
@@ -213,16 +259,17 @@ This creates an optimized standalone build in `.next/standalone/` ready for Dock
 ### Reverse Proxy Flow
 
 ```
-Browser → Caddy (443) → Next.js (3000) | FastAPI (8103)
-         ↓ /           ↓ /api/*
-    Frontend       Backend API
+Browser → Caddy (443) → forward_auth → Authelia (9091)   [AUTH_MODE=on]
+                      → Next.js (3000)   /
+                      → FastAPI (8103)   /api/*  (+ Remote-User / Remote-Groups)
 ```
 
 ### Security Features
 
 - Non-root user in Docker container
 - HTTPS with automatic redirect from HTTP
-- API only accessible through Caddy
+- API only accessible through Caddy (the backend binds its ports to 127.0.0.1)
+- Sign-in and group-based access at the edge with Authelia (see above)
 - CORS handled by reverse proxy
 - Content Security Policy ready
 

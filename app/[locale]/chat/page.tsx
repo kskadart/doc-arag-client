@@ -5,6 +5,8 @@ import { useTranslations } from 'next-intl';
 
 import { Home } from 'lucide-react';
 
+import { AdminOnly } from '@/components/auth/AdminOnly';
+import { UserMenu } from '@/components/auth/UserMenu';
 import { ChatHistory } from '@/components/chat/ChatHistory';
 import { ChatInput } from '@/components/chat/ChatInput';
 import { ChatMessage } from '@/components/chat/ChatMessage';
@@ -255,13 +257,16 @@ export default function ChatPage() {
             </h1>
           </div>
           <div className="flex items-center gap-3">
-            <Link
-              href="/documents"
-              className="py-2 border-2 border-[var(--md-sys-color-outline)] text-[var(--md-sys-color-primary)] rounded-full hover:bg-[var(--md-sys-color-surface-variant)] transition-standard"
-              style={{ paddingLeft: '1.05rem', paddingRight: '1.05rem' }}
-            >
-              {t('goToDocuments')}
-            </Link>
+            <UserMenu />
+            <AdminOnly>
+              <Link
+                href="/documents"
+                className="py-2 border-2 border-[var(--md-sys-color-outline)] text-[var(--md-sys-color-primary)] rounded-full hover:bg-[var(--md-sys-color-surface-variant)] transition-standard"
+                style={{ paddingLeft: '1.05rem', paddingRight: '1.05rem' }}
+              >
+                {t('goToDocuments')}
+              </Link>
+            </AdminOnly>
           </div>
         </div>
 

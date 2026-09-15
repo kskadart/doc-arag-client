@@ -72,7 +72,7 @@ jobs:
               sudo mkdir -p /opt/doc-arag-client
               sudo chown $USER:$USER /opt/doc-arag-client
             fi
-            mkdir -p /opt/doc-arag-client/caddy
+            mkdir -p /opt/doc-arag-client/caddy /opt/doc-arag-client/authelia
 
       - name: Copy docker-compose to server
         uses: appleboy/scp-action@v0.1.7
@@ -80,9 +80,31 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "compose.yml,caddy/Caddyfile"
+          source: "compose.yml,caddy,authelia"
           target: "/opt/doc-arag-client"
           strip_components: 0
+
+      # authelia/users.yml is not in git: it comes from the AUTHELIA_USERS_YML_B64
+      # secret (`base64 < users.yml | tr -d '\n'`, one line so it survives the
+      # SSH action); when the secret is empty the file already on the server is kept
+      - name: Install Authelia user database
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          AUTHELIA_USERS_YML_B64: ${{ secrets.AUTHELIA_USERS_YML_B64 }}
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: AUTHELIA_USERS_YML_B64
+          script: |
+            if [ -n "$AUTHELIA_USERS_YML_B64" ]; then
+              umask 077
+              printf '%s' "$AUTHELIA_USERS_YML_B64" | base64 -d > /opt/doc-arag-client/authelia/users.yml
+            fi
+            if [ ! -s /opt/doc-arag-client/authelia/users.yml ]; then
+              echo "authelia/users.yml is missing: set the AUTHELIA_USERS_YML_B64 secret" >&2
+              exit 1
+            fi
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
@@ -102,7 +124,14 @@ jobs:
             export STREAMLIT_DOMAIN=${{ vars.STREAMLIT_DOMAIN || 'sterility.ai.kskada.com' }}
             export STREAMLIT_HOST=${{ vars.STREAMLIT_HOST || 'sterility-ai' }}
             export STREAMLIT_PORT=${{ vars.STREAMLIT_PORT || '8501' }}
-            
+
+            # Authentication: AUTH_MODE=off (repository variable) disables it
+            export AUTH_MODE=${{ vars.AUTH_MODE || 'on' }}
+            if [ "$AUTH_MODE" = "on" ]; then export COMPOSE_PROFILES=auth; fi
+            export AUTHELIA_SESSION_SECRET='${{ secrets.AUTHELIA_SESSION_SECRET }}'
+            export AUTHELIA_STORAGE_ENCRYPTION_KEY='${{ secrets.AUTHELIA_STORAGE_ENCRYPTION_KEY }}'
+            export AUTHELIA_JWT_SECRET='${{ secrets.AUTHELIA_JWT_SECRET }}'
+
             # Login to GitHub Container Registry
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             

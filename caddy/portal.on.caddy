@@ -1,0 +1,3 @@
+auth.{$DOMAIN} {
+	reverse_proxy authelia:9091
+}

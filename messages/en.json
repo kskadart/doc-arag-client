@@ -113,5 +113,12 @@
     "en": "English",
     "ru": "Русский",
     "switchTo": "Switch to {language}"
+  },
+  "auth": {
+    "signOut": "Sign out",
+    "forbidden": {
+      "title": "Access restricted",
+      "description": "Document management is available to administrators only."
+    }
   }
 }

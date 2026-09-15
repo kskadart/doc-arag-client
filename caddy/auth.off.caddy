@@ -1,0 +1,2 @@
+# AUTH_MODE=off: no authentication at the edge (local development only).
+# The backend must then run with AUTH_MODE=none as well.
