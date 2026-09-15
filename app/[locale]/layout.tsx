@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 
+import { CurrentUserProvider } from '@/components/auth/CurrentUserProvider';
 import { locales } from '@/i18n';
 
 import '../globals.css';
@@ -37,7 +38,9 @@ export default async function LocaleLayout({
   return (
     <html lang={locale}>
       <body className="antialiased">
-        <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider messages={messages}>
+          <CurrentUserProvider>{children}</CurrentUserProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

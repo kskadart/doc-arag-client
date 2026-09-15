@@ -5,6 +5,16 @@ export interface HealthResponse {
   timestamp: string;
 }
 
+export interface MeResponse {
+  username: string;
+  display_name: string | null;
+  email: string | null;
+  groups: string[];
+  is_admin: boolean;
+  // none: the deployment runs without a login; trusted-headers: Authelia at the edge
+  auth_mode: 'none' | 'trusted-headers';
+}
+
 export interface UploadResponse {
   file_id: string;
   filename: string;

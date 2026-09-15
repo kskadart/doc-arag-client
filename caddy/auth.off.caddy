@@ -1,0 +1,9 @@
+# AUTH_MODE=off: no authentication at the edge (local development, or
+# production before Authelia is configured). The backend must then run with
+# AUTH_TRUSTED_HEADERS=false. Identity headers are still dropped, so a
+# misconfigured backend refuses requests instead of trusting forged ones.
+request_header -Remote-User
+request_header -Remote-Groups
+request_header -Remote-Email
+request_header -Remote-Name
+request_header -X-Auth-Proxy-Secret

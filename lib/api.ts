@@ -1,11 +1,13 @@
 // API client for backend communication
 
+import { markAuthenticated, redirectToLogin } from './auth';
 import {
   AgentQueryResponse,
   ApiError,
   DeleteResponse,
   EmbeddingResponse,
   HealthResponse,
+  MeResponse,
   QueryRequest,
   SessionDeleteResponse,
   TaskStatusResponse,
@@ -14,6 +16,50 @@ import {
 } from './types';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api';
+const SERVICE_UNAVAILABLE = 'Service is unavailable. Please check your connection.';
+const ACCESS_DENIED = 'You do not have permission to do this.';
+
+// Marks the call as a programmatic request so the edge (Authelia) answers an
+// expired session with 401 instead of redirecting to the login portal; a
+// redirect would be followed cross-origin and surface as a network error
+const XHR_HEADERS = {
+  Accept: 'application/json',
+  'X-Requested-With': 'XMLHttpRequest',
+};
+
+// Turns a failed response into an ApiError. A 401 (or, as a fallback, any
+// redirect: the backend never redirects, the edge does) means the session is
+// gone, so a navigation is started first and Caddy sends the user to the portal.
+async function errorFromResponse(response: Response, fallback: string): Promise<ApiError> {
+  if (response.type === 'opaqueredirect') {
+    redirectToLogin();
+    return { detail: 'Not authenticated', status: 401 };
+  }
+  if (response.status === 401) redirectToLogin();
+
+  // A 403 page from the edge is an access decision, not an outage
+  const htmlFallback = response.status === 403 ? ACCESS_DENIED : SERVICE_UNAVAILABLE;
+  let detail = fallback;
+  const contentType = response.headers.get('content-type');
+
+  try {
+    if (contentType && contentType.includes('application/json')) {
+      const errorData = await response.json();
+      detail = errorData.detail || errorData.message || fallback;
+    } else {
+      const text = await response.text();
+      if (text.includes('<!DOCTYPE html>') || text.includes('<html')) {
+        detail = htmlFallback;
+      } else {
+        detail = text || fallback;
+      }
+    }
+  } catch {
+    detail = SERVICE_UNAVAILABLE;
+  }
+
+  return { detail, status: response.status };
+}
 
 class ApiClient {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -22,39 +68,19 @@ class ApiClient {
     try {
       const response = await fetch(url, {
         ...options,
+        redirect: 'manual',
         headers: {
           'Content-Type': 'application/json',
+          ...XHR_HEADERS,
           ...options.headers,
         },
       });
 
       if (!response.ok) {
-        let errorMessage = 'An error occurred';
-        const contentType = response.headers.get('content-type');
-
-        try {
-          if (contentType && contentType.includes('application/json')) {
-            const errorData = await response.json();
-            errorMessage = errorData.detail || errorData.message || errorMessage;
-          } else {
-            const text = await response.text();
-            if (text.includes('<!DOCTYPE html>') || text.includes('<html')) {
-              errorMessage = 'Service is unavailable. Please check your connection.';
-            } else {
-              errorMessage = text || errorMessage;
-            }
-          }
-        } catch {
-          errorMessage = 'Service is unavailable. Please check your connection.';
-        }
-
-        const error: ApiError = {
-          detail: errorMessage,
-          status: response.status,
-        };
-        throw error;
+        throw await errorFromResponse(response, 'An error occurred');
       }
 
+      markAuthenticated();
       return await response.json();
     } catch (error) {
       if ((error as ApiError).status) {
@@ -70,6 +96,11 @@ class ApiClient {
   // Health check
   async health(): Promise<HealthResponse> {
     return this.request<HealthResponse>('/health');
+  }
+
+  // Who is signed in (as asserted by the edge proxy) and whether they administer documents
+  async me(): Promise<MeResponse> {
+    return this.request<MeResponse>('/me');
   }
 
   // Query documents with the agent
@@ -95,36 +126,16 @@ class ApiClient {
 
     const response = await fetch(`${API_BASE}/uploads`, {
       method: 'POST',
+      redirect: 'manual',
+      headers: XHR_HEADERS,
       body: formData,
     });
 
     if (!response.ok) {
-      let errorMessage = 'Upload failed';
-      const contentType = response.headers.get('content-type');
-
-      try {
-        if (contentType && contentType.includes('application/json')) {
-          const errorData = await response.json();
-          errorMessage = errorData.detail || errorData.message || errorMessage;
-        } else {
-          const text = await response.text();
-          if (text.includes('<!DOCTYPE html>') || text.includes('<html')) {
-            errorMessage = 'Service is unavailable. Please check your connection.';
-          } else {
-            errorMessage = text || errorMessage;
-          }
-        }
-      } catch {
-        errorMessage = 'Service is unavailable. Please check your connection.';
-      }
-
-      const error: ApiError = {
-        detail: errorMessage,
-        status: response.status,
-      };
-      throw error;
+      throw await errorFromResponse(response, 'Upload failed');
     }
 
+    markAuthenticated();
     return await response.json();
   }
 

@@ -5,6 +5,8 @@ import { useTranslations } from 'next-intl';
 
 import { Home, Upload } from 'lucide-react';
 
+import { useCurrentUser } from '@/components/auth/CurrentUserProvider';
+import { UserMenu } from '@/components/auth/UserMenu';
 import { DocumentList } from '@/components/documents/DocumentList';
 import { DocumentUpload } from '@/components/documents/DocumentUpload';
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
@@ -14,6 +16,13 @@ import { Link } from '@/lib/navigation';
 export default function DocumentsPage() {
   const t = useTranslations('documents');
   const tCommon = useTranslations('common');
+  const tAuth = useTranslations('auth');
+  const { user, loading } = useCurrentUser();
+  // Operators reach this page only by URL. Nothing that calls the admin-only
+  // API mounts until /me has answered; if /me failed the list is shown and
+  // the backend decides
+  const forbidden = user !== null && !user.is_admin;
+  const canManage = !loading && !forbidden;
 
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -46,6 +55,7 @@ export default function DocumentsPage() {
               </h1>
             </div>
             <div className="flex items-center gap-6">
+              <UserMenu />
               <LanguageSwitcher />
               <Link
                 href="/chat"
@@ -65,27 +75,36 @@ export default function DocumentsPage() {
       </div>
 
       {/* Main content */}
-      <div className="container mx-auto px-8 md:px-12 lg:px-16 py-12">
-        {/* Upload button */}
-        <div className="mb-12 flex justify-center">
-          <button
-            onClick={() => setShowUploadModal(true)}
-            className="flex items-center gap-3 py-4 rounded-lg text-lg font-semibold transition-colors duration-200 hover:opacity-90"
-            style={{
-              backgroundColor: '#1a1a1a',
-              color: '#ffffff',
-              paddingLeft: '2.625rem',
-              paddingRight: '2.625rem',
-            }}
-          >
-            <Upload className="w-6 h-6" />
-            {t('uploadButton')}
-          </button>
+      {loading ? null : forbidden ? (
+        <div className="container mx-auto px-8 md:px-12 lg:px-16 py-24 text-center">
+          <h2 className="text-2xl font-semibold mb-4" style={{ color: '#1a1a1a' }}>
+            {tAuth('forbidden.title')}
+          </h2>
+          <p style={{ color: '#5a5a5a' }}>{tAuth('forbidden.description')}</p>
         </div>
+      ) : (
+        <div className="container mx-auto px-8 md:px-12 lg:px-16 py-12">
+          {/* Upload button */}
+          <div className="mb-12 flex justify-center">
+            <button
+              onClick={() => setShowUploadModal(true)}
+              className="flex items-center gap-3 py-4 rounded-lg text-lg font-semibold transition-colors duration-200 hover:opacity-90"
+              style={{
+                backgroundColor: '#1a1a1a',
+                color: '#ffffff',
+                paddingLeft: '2.625rem',
+                paddingRight: '2.625rem',
+              }}
+            >
+              <Upload className="w-6 h-6" />
+              {t('uploadButton')}
+            </button>
+          </div>
 
-        {/* Document list */}
-        <DocumentList refreshTrigger={refreshTrigger} />
-      </div>
+          {/* Document list */}
+          <DocumentList refreshTrigger={refreshTrigger} />
+        </div>
+      )}
 
       {/* Upload modal */}
       <Modal
@@ -98,20 +117,22 @@ export default function DocumentsPage() {
       </Modal>
 
       {/* Floating action button for mobile */}
-      <button
-        onClick={() => setShowUploadModal(true)}
-        className="fixed bottom-6 right-6 rounded-full transition-all duration-200 hover:opacity-90 flex items-center justify-center md:hidden"
-        style={{
-          backgroundColor: '#1a1a1a',
-          color: '#ffffff',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-          width: '4.2rem',
-          height: '4.2rem',
-        }}
-        title={t('uploadButton')}
-      >
-        <Upload className="w-7 h-7" />
-      </button>
+      {canManage && (
+        <button
+          onClick={() => setShowUploadModal(true)}
+          className="fixed bottom-6 right-6 rounded-full transition-all duration-200 hover:opacity-90 flex items-center justify-center md:hidden"
+          style={{
+            backgroundColor: '#1a1a1a',
+            color: '#ffffff',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+            width: '4.2rem',
+            height: '4.2rem',
+          }}
+          title={t('uploadButton')}
+        >
+          <Upload className="w-7 h-7" />
+        </button>
+      )}
     </div>
   );
 }

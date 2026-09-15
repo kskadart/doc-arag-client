@@ -1,5 +1,7 @@
 import { useTranslations } from 'next-intl';
 
+import { AdminOnly } from '@/components/auth/AdminOnly';
+import { UserMenu } from '@/components/auth/UserMenu';
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 import { Link } from '@/lib/navigation';
 
@@ -19,20 +21,23 @@ export default function HomePage() {
             >
               {t('cta.startChat')}
             </Link>
-            <Link
-              href="/documents"
-              className="text-base font-medium transition-colors duration-200 hover:opacity-70"
-              style={{ color: '#1a1a1a' }}
-            >
-              {t('cta.manageDocuments')}
-            </Link>
+            <AdminOnly>
+              <Link
+                href="/documents"
+                className="text-base font-medium transition-colors duration-200 hover:opacity-70"
+                style={{ color: '#1a1a1a' }}
+              >
+                {t('cta.manageDocuments')}
+              </Link>
+            </AdminOnly>
           </div>
         </div>
       </div>
 
       {/* Language switcher - right side of page */}
       <div className="absolute top-8 z-10 px-8 md:px-12 lg:px-16 right-0">
-        <div style={{ marginRight: '10px' }}>
+        <div className="flex items-center gap-6" style={{ marginRight: '10px' }}>
+          <UserMenu />
           <LanguageSwitcher />
         </div>
       </div>

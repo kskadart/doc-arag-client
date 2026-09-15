@@ -1,0 +1,24 @@
+---
+# Copy to authelia/users.yml (git-ignored) and replace the hashes.
+# Generate a hash:
+#   docker run --rm authelia/authelia:4.39.27 authelia crypto hash generate argon2 --password 'change-me'
+# Groups: `admins` (or whatever AUTH_ADMIN_GROUP is) may manage documents;
+# everyone else may only chat.
+# Authelia reloads this file on change (watch: true), no restart needed.
+
+users:
+  admin:
+    disabled: false
+    displayname: 'Administrator'
+    password: '$argon2id$v=19$m=65536,t=3,p=4$REPLACE_ME_WITH_A_REAL_HASH'
+    email: 'admin@example.com'
+    groups:
+      - 'admins'
+      - 'operators'
+  operator:
+    disabled: false
+    displayname: 'Support Operator'
+    password: '$argon2id$v=19$m=65536,t=3,p=4$REPLACE_ME_WITH_A_REAL_HASH'
+    email: 'operator@example.com'
+    groups:
+      - 'operators'
