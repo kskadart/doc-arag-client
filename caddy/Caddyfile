@@ -26,11 +26,3 @@ http://{$DOMAIN} {
 
 # Authelia login portal on auth.{DOMAIN}; empty file when AUTH_MODE=off
 import /etc/caddy/portal.{$AUTH_MODE:off}.caddy
-
-http://{$STREAMLIT_DOMAIN} {
-	redir https://{$STREAMLIT_DOMAIN}{uri} permanent
-}
-
-{$STREAMLIT_DOMAIN} {
-	reverse_proxy {$STREAMLIT_HOST}:{$STREAMLIT_PORT}
-}
