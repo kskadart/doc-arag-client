@@ -38,6 +38,9 @@ services:
       - API_PATH=${API_PATH:-/api}
       # on: every request goes through Authelia (needs the `auth` profile below)
       - AUTH_MODE=${AUTH_MODE:-off}
+      # Sent to the backend as X-Auth-Proxy-Secret; the same value as the
+      # backend's AUTH_PROXY_SECRET. Required when AUTH_MODE=on
+      - AUTH_PROXY_SECRET=${AUTH_PROXY_SECRET:-}
       # e.g. local_certs when DOMAIN is a made-up name from /etc/hosts
       - CADDY_GLOBAL_OPTIONS=${CADDY_GLOBAL_OPTIONS:-}
       - STREAMLIT_DOMAIN=${STREAMLIT_DOMAIN:-sterility.ai.kskada.com}
@@ -49,7 +52,7 @@ services:
 
   # Login portal + forward-auth decisions for Caddy. Started only with
   # `COMPOSE_PROFILES=auth` (or `docker compose --profile auth up`), together
-  # with AUTH_MODE=on for Caddy and AUTH_MODE=trusted-headers for the backend.
+  # with AUTH_MODE=on for Caddy and AUTH_TRUSTED_HEADERS=true for the backend.
   authelia:
     image: authelia/authelia:4.39.27
     container_name: doc-arag-authelia
@@ -63,6 +66,8 @@ services:
       - X_AUTHELIA_CONFIG=/config/configuration.yml
       - X_AUTHELIA_CONFIG_FILTERS=template
       - DOMAIN=${DOMAIN:-localhost}
+      # Must match the backend's AUTH_ADMIN_GROUP
+      - AUTH_ADMIN_GROUP=${AUTH_ADMIN_GROUP:-admins}
       # Three independent random strings, e.g. `openssl rand -hex 32` each.
       # Authelia refuses to start while they are empty.
       - AUTHELIA_SESSION_SECRET=${AUTHELIA_SESSION_SECRET:-}

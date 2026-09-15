@@ -1,6 +1,6 @@
 // API client for backend communication
 
-import { redirectToLogin } from './auth';
+import { markAuthenticated, redirectToLogin } from './auth';
 import {
   AgentQueryResponse,
   ApiError,
@@ -16,6 +16,7 @@ import {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api';
 const SERVICE_UNAVAILABLE = 'Service is unavailable. Please check your connection.';
+const ACCESS_DENIED = 'You do not have permission to do this.';
 
 // Marks the call as a programmatic request so the edge (Authelia) answers an
 // expired session with 401 instead of redirecting to the login portal; a
@@ -35,6 +36,8 @@ async function errorFromResponse(response: Response, fallback: string): Promise<
   }
   if (response.status === 401) redirectToLogin();
 
+  // A 403 page from the edge is an access decision, not an outage
+  const htmlFallback = response.status === 403 ? ACCESS_DENIED : SERVICE_UNAVAILABLE;
   let detail = fallback;
   const contentType = response.headers.get('content-type');
 
@@ -45,7 +48,7 @@ async function errorFromResponse(response: Response, fallback: string): Promise<
     } else {
       const text = await response.text();
       if (text.includes('<!DOCTYPE html>') || text.includes('<html')) {
-        detail = SERVICE_UNAVAILABLE;
+        detail = htmlFallback;
       } else {
         detail = text || fallback;
       }
@@ -76,6 +79,7 @@ class ApiClient {
         throw await errorFromResponse(response, 'An error occurred');
       }
 
+      markAuthenticated();
       return await response.json();
     } catch (error) {
       if ((error as ApiError).status) {
@@ -123,6 +127,7 @@ class ApiClient {
       throw await errorFromResponse(response, 'Upload failed');
     }
 
+    markAuthenticated();
     return await response.json();
   }
 

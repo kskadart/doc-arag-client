@@ -88,6 +88,7 @@ jobs:
       # secret (`base64 < users.yml | tr -d '\n'`, one line so it survives the
       # SSH action); when the secret is empty the file already on the server is kept
       - name: Install Authelia user database
+        if: ${{ vars.AUTH_MODE == 'on' }}
         uses: appleboy/ssh-action@v1.0.3
         env:
           AUTHELIA_USERS_YML_B64: ${{ secrets.AUTHELIA_USERS_YML_B64 }}
@@ -125,9 +126,12 @@ jobs:
             export STREAMLIT_HOST=${{ vars.STREAMLIT_HOST || 'sterility-ai' }}
             export STREAMLIT_PORT=${{ vars.STREAMLIT_PORT || '8501' }}
 
-            # Authentication: AUTH_MODE=off (repository variable) disables it
-            export AUTH_MODE=${{ vars.AUTH_MODE || 'on' }}
+            # Authentication stays off until the repository variable AUTH_MODE=on is
+            # set together with the AUTHELIA_* and AUTH_PROXY_SECRET secrets
+            export AUTH_MODE=${{ vars.AUTH_MODE || 'off' }}
             if [ "$AUTH_MODE" = "on" ]; then export COMPOSE_PROFILES=auth; fi
+            export AUTH_PROXY_SECRET='${{ secrets.AUTH_PROXY_SECRET }}'
+            export AUTH_ADMIN_GROUP=${{ vars.AUTH_ADMIN_GROUP || 'admins' }}
             export AUTHELIA_SESSION_SECRET='${{ secrets.AUTHELIA_SESSION_SECRET }}'
             export AUTHELIA_STORAGE_ENCRYPTION_KEY='${{ secrets.AUTHELIA_STORAGE_ENCRYPTION_KEY }}'
             export AUTHELIA_JWT_SECRET='${{ secrets.AUTHELIA_JWT_SECRET }}'

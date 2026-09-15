@@ -1,13 +1,19 @@
-# Identity headers coming from the browser are dropped first, so the backend
-# only ever sees what Authelia asserted (forward_auth sets them on success)
+# Identity headers and the proxy secret coming from the browser are dropped
+# first, so the backend only ever sees what Authelia and Caddy asserted
 request_header -Remote-User
 request_header -Remote-Groups
 request_header -Remote-Email
 request_header -Remote-Name
+request_header -X-Auth-Proxy-Secret
 
 # Browser navigations without a session are redirected to the portal,
-# XHR/fetch calls get 401 (the client reloads the page on 401)
+# XHR/fetch calls get 401 (the client reloads the page once on 401)
 forward_auth authelia:9091 {
 	uri /api/authz/forward-auth
 	copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
 }
+
+# Proves to the backend that the request passed this edge: other containers on
+# arag-common-network can reach the API directly but do not know the value.
+# Set after forward_auth so it is never sent to Authelia.
+request_header X-Auth-Proxy-Secret {$AUTH_PROXY_SECRET}

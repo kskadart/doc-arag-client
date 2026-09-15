@@ -44,20 +44,22 @@ authentication_backend:
         key_length: 32
         salt_length: 16
 
-# First matching rule wins. Document management is for the admins group,
-# everything else (chat, /api/query, /api/tasks, /api/me) for any signed-in user.
+# First matching rule wins. Document management is for the admin group (the
+# same AUTH_ADMIN_GROUP the backend checks), everything else (chat, /api/query,
+# /api/tasks, /api/me) for any signed-in user. The backend enforces the group
+# again; this rule mainly keeps non-admin uploads from reaching it at all.
 access_control:
   default_policy: 'deny'
   rules:
     - domain: '{{ env "DOMAIN" }}'
       resources:
-        - '^/api/(uploads|embeddings|documents)([/?].*)?$'
+        - '^/api/(uploads|embeddings|documents|scrappings)([/?].*)?$'
       subject:
-        - 'group:admins'
+        - 'group:{{ env "AUTH_ADMIN_GROUP" }}'
       policy: 'one_factor'
     - domain: '{{ env "DOMAIN" }}'
       resources:
-        - '^/api/(uploads|embeddings|documents)([/?].*)?$'
+        - '^/api/(uploads|embeddings|documents|scrappings)([/?].*)?$'
       policy: 'deny'
     - domain: '{{ env "DOMAIN" }}'
       policy: 'one_factor'

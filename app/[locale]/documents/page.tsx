@@ -17,9 +17,12 @@ export default function DocumentsPage() {
   const t = useTranslations('documents');
   const tCommon = useTranslations('common');
   const tAuth = useTranslations('auth');
-  const { user } = useCurrentUser();
-  // Operators reach this page only by URL; the backend refuses them anyway
+  const { user, loading } = useCurrentUser();
+  // Operators reach this page only by URL. Nothing that calls the admin-only
+  // API mounts until /me has answered; if /me failed the list is shown and
+  // the backend decides
   const forbidden = user !== null && !user.is_admin;
+  const canManage = !loading && !forbidden;
 
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -72,7 +75,7 @@ export default function DocumentsPage() {
       </div>
 
       {/* Main content */}
-      {forbidden ? (
+      {loading ? null : forbidden ? (
         <div className="container mx-auto px-8 md:px-12 lg:px-16 py-24 text-center">
           <h2 className="text-2xl font-semibold mb-4" style={{ color: '#1a1a1a' }}>
             {tAuth('forbidden.title')}
@@ -114,7 +117,7 @@ export default function DocumentsPage() {
       </Modal>
 
       {/* Floating action button for mobile */}
-      {!forbidden && (
+      {canManage && (
         <button
           onClick={() => setShowUploadModal(true)}
           className="fixed bottom-6 right-6 rounded-full transition-all duration-200 hover:opacity-90 flex items-center justify-center md:hidden"

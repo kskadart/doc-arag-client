@@ -151,8 +151,10 @@ The frontend uses the `arag-common-network` Docker network created by the backen
 Sign-in is handled at the edge, not in the app: Caddy asks
 [Authelia](https://www.authelia.com/) about every request (`forward_auth`), unauthenticated
 browser navigations are redirected to the login portal on `auth.<DOMAIN>`, and the backend
-receives the identity as `Remote-User` / `Remote-Groups` headers (its `AUTH_MODE=trusted-headers`).
-Members of the `admins` group may manage documents; everyone else may only chat. The rules live
+receives the identity as `Remote-User` / `Remote-Groups` headers plus `X-Auth-Proxy-Secret`, a
+shared secret that proves the request passed Caddy (backend `AUTH_TRUSTED_HEADERS=true`).
+Members of the `AUTH_ADMIN_GROUP` group (`admins` by default) may manage documents; everyone else
+may only chat. The rules live
 in `authelia/configuration.yml`; the client only reads `GET /api/me` to show the user, hide the
 Documents page from operators and reload on `401` so the portal redirect can happen.
 
@@ -177,16 +179,20 @@ It is off by default (`AUTH_MODE=off`, no `authelia` container). To enable:
    AUTHELIA_SESSION_SECRET=$(openssl rand -hex 32)
    AUTHELIA_STORAGE_ENCRYPTION_KEY=$(openssl rand -hex 32)
    AUTHELIA_JWT_SECRET=$(openssl rand -hex 32)
+   AUTH_PROXY_SECRET=...              # openssl rand -hex 32, same value in the backend .env
    CADDY_GLOBAL_OPTIONS=local_certs   # local domain only
    ```
 
-4. Start the backend with `AUTH_MODE=trusted-headers`, then `docker compose up -d` here.
+4. Start the backend with `AUTH_TRUSTED_HEADERS=true` and the same `AUTH_PROXY_SECRET`, then
+   `docker compose up -d` here.
 
 Password-reset and 2FA-enrolment mails are written to `/data/notification.txt` inside the
-`authelia_data` volume until an SMTP notifier is configured. In production the workflow
-`deploy.yml` takes the three secrets and the users file from GitHub
-secrets (`AUTHELIA_USERS_YML_B64` is the file base64-encoded on one line); the repository
-variable `AUTH_MODE=off` disables authentication.
+`authelia_data` volume until an SMTP notifier is configured.
+
+In production authentication stays off until it is switched on deliberately. Create the secrets
+`AUTHELIA_SESSION_SECRET`, `AUTHELIA_STORAGE_ENCRYPTION_KEY`, `AUTHELIA_JWT_SECRET`,
+`AUTH_PROXY_SECRET` and `AUTHELIA_USERS_YML_B64` (the users file base64-encoded on one line), deploy
+the backend with `AUTH_TRUSTED_HEADERS=true`, then set the repository variable `AUTH_MODE=on`.
 
 ## Project Structure
 
