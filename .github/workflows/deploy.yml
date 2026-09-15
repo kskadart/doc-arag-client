@@ -98,9 +98,19 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           envs: AUTHELIA_USERS_YML_B64
           script: |
+            USERS=/opt/doc-arag-client/authelia/users.yml
+            BEFORE=$(sha256sum "$USERS" 2>/dev/null | cut -d' ' -f1)
             if [ -n "$AUTHELIA_USERS_YML_B64" ]; then
               umask 077
-              printf '%s' "$AUTHELIA_USERS_YML_B64" | base64 -d > /opt/doc-arag-client/authelia/users.yml
+              printf '%s' "$AUTHELIA_USERS_YML_B64" | base64 -d > "$USERS"
+            fi
+            # Authelia's file watcher does not pick up this in-place rewrite of the
+            # bind-mounted file, so restart it when the user database really changed
+            # (an unchanged file keeps everyone's sessions)
+            AFTER=$(sha256sum "$USERS" 2>/dev/null | cut -d' ' -f1)
+            if [ "$BEFORE" != "$AFTER" ] && [ -n "$(docker ps -q -f name=^doc-arag-authelia$)" ]; then
+              docker restart doc-arag-authelia
+              echo "users.yml changed: Authelia restarted"
             fi
             if [ ! -s /opt/doc-arag-client/authelia/users.yml ]; then
               echo "authelia/users.yml is missing: set the AUTHELIA_USERS_YML_B64 secret" >&2
