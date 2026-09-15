@@ -43,9 +43,6 @@ services:
       - AUTH_PROXY_SECRET=${AUTH_PROXY_SECRET:-}
       # e.g. local_certs when DOMAIN is a made-up name from /etc/hosts
       - CADDY_GLOBAL_OPTIONS=${CADDY_GLOBAL_OPTIONS:-}
-      - STREAMLIT_DOMAIN=${STREAMLIT_DOMAIN:-sterility.ai.kskada.com}
-      - STREAMLIT_HOST=${STREAMLIT_HOST:-sterility-ai}
-      - STREAMLIT_PORT=${STREAMLIT_PORT:-8501}
     restart: unless-stopped
     networks:
       - arag-common-network
