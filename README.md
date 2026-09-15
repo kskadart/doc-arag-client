@@ -186,8 +186,10 @@ It is off by default (`AUTH_MODE=off`, no `authelia` container). To enable:
 4. Start the backend with `AUTH_TRUSTED_HEADERS=true` and the same `AUTH_PROXY_SECRET`, then
    `docker compose up -d` here.
 
-Password-reset and 2FA-enrolment mails are written to `/data/notification.txt` inside the
-`authelia_data` volume until an SMTP notifier is configured.
+Self-service password reset is disabled, so the login page has no "Reset password?" link. To
+change a password, generate a new hash as in step 2 and replace it in `authelia/users.yml`;
+Authelia reloads the file on its own. 2FA-enrolment mails are written to `/data/notification.txt`
+inside the `authelia_data` volume until an SMTP notifier is configured.
 
 In production authentication stays off until it is switched on deliberately. Create the secrets
 `AUTHELIA_SESSION_SECRET`, `AUTHELIA_STORAGE_ENCRYPTION_KEY`, `AUTHELIA_JWT_SECRET`,

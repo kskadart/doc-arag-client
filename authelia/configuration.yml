@@ -16,8 +16,9 @@ log:
   level: 'info'
   format: 'text'
 
-# Password-reset e-mails are written to a file (see notifier); the JWT secret
-# that signs the reset links comes from the environment
+# Self-service password reset is disabled (authentication_backend below). The
+# JWT secret for reset links is still read from the environment, so turning
+# the feature back on needs no new secret
 identity_validation:
   reset_password:
     jwt_lifespan: '5 minutes'
@@ -29,8 +30,10 @@ totp:
 # Later this block can become an ldap: backend for the corporate directory
 # without touching anything else.
 authentication_backend:
+  # No "Reset password?" link on the login page: users cannot reset their own
+  # password, an administrator replaces the hash in users.yml instead
   password_reset:
-    disable: false
+    disable: true
   file:
     path: '/config/users.yml'
     watch: true
@@ -85,7 +88,7 @@ storage:
   local:
     path: '/data/db.sqlite3'
 
-# No SMTP yet: password-reset and 2FA-enrolment mails land in this file inside
+# No SMTP yet: identity-verification mails (e.g. 2FA enrolment) land in this file inside
 # the authelia_data volume (docker exec doc-arag-authelia cat /data/notification.txt).
 # Replace with an smtp: block when a mail relay is available.
 notifier:
