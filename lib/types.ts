@@ -28,6 +28,8 @@ export interface QueryRequest {
   query: string;
   domain?: string;
   max_iterations?: number;
+  // Chat id: the backend keeps the conversation and resolves follow-ups against it
+  session_id?: string;
 }
 
 export interface AgentQueryResponse {
@@ -37,6 +39,13 @@ export interface AgentQueryResponse {
   confidence: number;
   iterations: number;
   sources_used: number;
+  session_id?: string | null;
+}
+
+export interface SessionDeleteResponse {
+  session_id: string;
+  status: string;
+  deleted_messages: number;
 }
 
 export interface EmbeddingResponse {

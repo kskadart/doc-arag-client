@@ -62,9 +62,13 @@ export default function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [currentSession?.messages]);
 
+  // Session ids are sent to the backend as the chat memory key, so prefer a
+  // uuid where the browser offers one (secure contexts only)
+  const generateSessionId = () => globalThis.crypto?.randomUUID?.() ?? generateId();
+
   const createNewSession = () => {
     const newSession: ChatSession = {
-      id: generateId(),
+      id: generateSessionId(),
       title: '', // Empty title will show translated "New Chat"
       messages: [],
       created_at: new Date(),
@@ -101,6 +105,8 @@ export default function ChatPage() {
   };
 
   const deleteSession = (sessionId: string) => {
+    // Best effort: the local chat disappears even if the backend is unreachable
+    apiClient.deleteSession(sessionId).catch(() => {});
     const newSessions = sessions.filter((s) => s.id !== sessionId);
     setSessions(newSessions);
 
@@ -115,7 +121,7 @@ export default function ChatPage() {
     // Create new session if none exists
     if (!sessionId) {
       const newSession: ChatSession = {
-        id: generateId(),
+        id: generateSessionId(),
         title: '',
         messages: [],
         created_at: new Date(),
@@ -157,6 +163,9 @@ export default function ChatPage() {
         query: content,
         domain: 'DefaultDocuments',
         max_iterations: 2,
+        // The local id, not currentSession.id: on the first message of a new
+        // chat the state update above has not landed yet
+        session_id: sessionId,
       });
 
       const assistantMessage: ChatMessageType = {
